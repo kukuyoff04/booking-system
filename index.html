@@ -100,10 +100,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ⚠️ ใส่ลิงก์ Web App URL ของคุณที่นี่ (อันเดิมก็ได้ ถ้า Deploy ทับแล้ว)
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzNq-0Fp9ky-jhxlL6ETOokEtLEDZeBsaSB7FrjLIL3C0gKCtqS_wiMk__2M_nn8KCsTg/exec"; // <-- เปลี่ยนเป็นลิงก์ของคุณถ้ามีอันใหม่
+    // ------------------------------------------------------------------
+    // ✅ อัปเดตลิงก์ใหม่ให้เรียบร้อยแล้วครับ! (12 Dec 2025)
+    // ------------------------------------------------------------------
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyQHkhSPfwejEehY1SYBqn4y2FUZqQ3Lo1_1nPUBUFNUJW1FGLHBlS_Dh_4bieFk21w3g/exec";
 
-    let currentPass = ""; // ตัวแปรเก็บรหัสผ่านชั่วคราว
+    let currentPass = ""; 
 
     // --- 1. Booking ---
     document.getElementById('bookingForm').addEventListener('submit', function(e) {
@@ -154,14 +156,13 @@
         const btn = document.querySelector('#loginSection button');
         btn.disabled = true; btn.innerText = 'ตรวจสอบ...';
 
-        // ส่งรหัสไปตรวจที่ Server (ปลอดภัยกว่าตรวจใน JS)
         const fd = new FormData(); 
         fd.append('action', 'login'); 
         fd.append('password', pass);
 
         fetch(WEB_APP_URL, { method: 'POST', body: fd }).then(r=>r.json()).then(res => {
             if(res.result == 'success') {
-                currentPass = pass; // จำรหัสไว้ใช้ตอนดึงข้อมูล
+                currentPass = pass; 
                 document.getElementById('loginSection').classList.add('d-none');
                 document.getElementById('adminData').classList.remove('d-none');
                 loadAdminData();
@@ -177,31 +178,22 @@
         
         const fd = new FormData(); 
         fd.append('action', 'get_data');
-        fd.append('password', currentPass); // ต้องส่งรหัสไปด้วยทุกครั้ง
+        fd.append('password', currentPass); 
 
         fetch(WEB_APP_URL, { method: 'POST', body: fd }).then(r=>r.json()).then(rows => {
             let html = '';
             if(rows.length === 0) html = '<tr><td colspan="4" class="text-center text-muted">ไม่มีข้อมูลการจอง</td></tr>';
             
             rows.forEach(r => {
-                // ปุ่มยกเลิก (แสดงเฉพาะถ้ายังไม่ยกเลิกและยังไม่เข้างาน)
                 let cancelBtn = (r.status == 'Booked') ? 
                     `<button class="btn btn-action btn-outline-warning" onclick="updateStatus('${r.id}', 'cancel')" title="ยกเลิก"><i class="bi bi-x-lg"></i></button>` : '';
-                
-                // ปุ่มลบ (ถังขยะ - ลบถาวร)
                 let deleteBtn = `<button class="btn btn-action btn-outline-danger" onclick="updateStatus('${r.id}', 'delete')" title="ลบทิ้งถาวร"><i class="bi bi-trash"></i></button>`;
 
                 html += `<tr>
                     <td class="fw-bold text-primary">${r.table}</td>
-                    <td>
-                        <div class="fw-bold">${r.name}</div>
-                        <div class="text-muted" style="font-size:0.8em">${r.phone}</div>
-                    </td>
+                    <td><div class="fw-bold">${r.name}</div><div class="text-muted" style="font-size:0.8em">${r.phone}</div></td>
                     <td class="text-center"><span class="status-${r.status}">${r.status}</span></td>
-                    <td class="text-end">
-                        ${cancelBtn}
-                        ${deleteBtn}
-                    </td>
+                    <td class="text-end">${cancelBtn} ${deleteBtn}</td>
                 </tr>`;
             });
             document.getElementById('tableBody').innerHTML = html;
@@ -209,13 +201,13 @@
     }
 
     function updateStatus(id, actionType) {
-        let confirmMsg = actionType == 'delete' ? '⚠️ ยืนยันลบข้อมูลนี้ทิ้งถาวร?\n(กู้คืนไม่ได้นะครับ)' : 'ยืนยันยกเลิกการจอง?';
+        let confirmMsg = actionType == 'delete' ? '⚠️ ยืนยันลบข้อมูลนี้ทิ้งถาวร?' : 'ยืนยันยกเลิกการจอง?';
         if(!confirm(confirmMsg)) return;
 
         const fd = new FormData(); 
         fd.append('action', actionType); 
         fd.append('id', id);
-        fd.append('password', currentPass); // ส่งรหัสผ่านไปด้วย
+        fd.append('password', currentPass);
 
         fetch(WEB_APP_URL, { method: 'POST', body: fd }).then(r=>r.json()).then(res => {
             if(res.result == 'success') loadAdminData();
